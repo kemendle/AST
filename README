@@ -29,8 +29,8 @@ Output two result files and one intermediate file :
 (2) out.$m.taxon2m : a statistics to indicate how many sequences sampled from the corresponding taxonomy
 (3) cal.process: contains intermediate values and process of calculation for being used in test.
 
-For example, to sample 15 sequences from the "test" file, pls type the command line as:
-"./AST.pl -u 1 -l 1 -f test -m 15".
+For example, to sample 15 sequences from the "test" file into "Test_Result" directory, pls type the command line as:
+"./AST.pl -u 1 -l 1 -o Test_Result -f test -m 15".
 
 If you have any question, pls contact: 
 Chan Zhou: zhouchan99@gmail.com
