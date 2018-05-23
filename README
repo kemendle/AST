@@ -1,0 +1,43 @@
+######README FILE for AST.pl########################################################################
+######Release 0.4 version###########################################################################
+
+1.put AST.pl script under a directory in the Linux
+2.download the NCBI taxonomic dmp files ("nodes.dmp" and "names.dmp") from ncbi taxonomy directory (ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz) and put these two files in the same directory as that of AST.pl
+2.$chmod u+x AST.pl  #change the privilege of this perl script
+3.usage: 
+./AST.pl -h
+it will display the help page.
+
+Input:
+(1) File "non_redundant_hits_file" is the file contains the information of all relevant sequences from which you would like to sample.
+(2) m: pls specify the number of sequences you would like to sample
+
+Note that all input files should be in the same directory.
+
+#File format for "non_redundant_hits_file":
+It should be composed of four columns as follows:
+column 1: gi number
+column 2: NCBI taxonomy id; 
+	  #Note: you could find the taxonomy id corresponding to each gi from:
+	  ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_prot.zip  For proteins
+	  ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.zip  For nucleotide sequences
+column 3: score;
+	  This score should reflect the similarity level between this hit sequence and the query. The higher score, the more similar. For example, bitscore of blast search will be a suitable choice. Note that E-value is not acceptable.)
+
+Output two result files and one intermediate file :
+(1) out.$m.sample  : the id list of sampled sequences
+(2) out.$m.taxon2m : a statistics to indicate how many sequences sampled from the corresponding taxonomy
+(3) cal.process: contains intermediate values and process of calculation for being used in test.
+
+For example, to sample 15 sequences from the "test" file, pls type the command line as:
+"./AST.pl -u 1 -l 1 -f test -m 15".
+
+If you have any question, pls contact: 
+Chan Zhou: zhouchan99@gmail.com
+
+If you find AST.pl is useful in your work, pls cite:
+Chan Zhou, Fenglou Mao, Yanbin Yin, Jinling Huang, Johann Peter Gogarten, Ying Xu;
+AST: an automated sequence-sampling method for improving the taxonomic diversity of gene phylogenetic trees, 2013, submitted.
+
+Last updated: 2/2013
+
