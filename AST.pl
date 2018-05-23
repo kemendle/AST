@@ -38,12 +38,14 @@ use strict;
 use POSIX;
 use warnings; #02/04/13
 use Getopt::Std;#02/04/13
+use FindBin;
+use File::Path qw(make_path);
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 my %opt;
 my $USAGE =<<EOF;
 Usage:
-	[perl] $0 [-hvul] -f -m 
+	[perl] $0 [-hvulo] -f -m
 Syntax:
 	-h	This help
 	-v	Print version and quit
@@ -54,16 +56,17 @@ Syntax:
 	-l	boolean flags: 0 or 1.
 		0: exclude taxa annotated as "environmental samples (xxx)"
 		1 [default]: include taxa annotated as "environmental samples (xxx)"
+	-o  output folder name. [default: current]
 	-f	input file name. It is composed of the list of gene/protein IDs, taxonomic IDs, score of non redundant hits.Pls ref. to the README for details.
 	-m 	integer number of sampled sequences
 
 Examples :
-	perl $0  -u 1 -l 1 -f test -m 30 
+	perl $0  -u 1 -l 1 -o Test_Result -f test -m 30
 	or
 	perl $0 -f test -m 28
 
 NOTE: 
-	1. pls put the nodes.dmp & names.dmp files in the current directory.
+	1. pls put the nodes.dmp & names.dmp files in the same directory as this script.
 	2. the version of nodes.dmp should be consistent with the version of gi2tax which is used to map the gi to the corresponding taxonomic gi in the input file (gi2tax: gi_taxid_prot.dmp for proteins / gi_taxid_nucl.dmp for nucleotide sequences)\n";
 EOF
 
@@ -77,7 +80,7 @@ sub main::VERSION {
 	exit 1;
 }
 
-getopt('hvulf:m:', \%opt);#02/04/13 $opt_u & $opt_e: boolean flags, store their values
+getopt('hvulof:m:', \%opt);#02/04/13 $opt_u & $opt_e: boolean flags, store their values
 
 if (exists ($opt{h})) {
 	main::HELP_MESSAGE;
@@ -93,12 +96,20 @@ if ((not exists $opt{f}) or (not exists $opt{m})) {
 
 my $unclassified=1;
 my $environment_sample=1;
+my $output_dir=".";
+my $bin_dir = $FindBin::Bin;
+
 if(defined $opt{u}){
 	$unclassified=$opt{u};
 }
 
 if(defined $opt{l}){
 	$environment_sample=$opt{l};
+}
+
+if(defined $opt{o}){
+    $output_dir=$opt{o};
+    make_path($output_dir);
 }
 
 ################################################################################################
@@ -128,7 +139,7 @@ my $numnethits = @nethits;
 close NETHITS;
 
 #2/6/13 ##########################################################
-my $getue_state=`grep -P 'unclassified|environmental' names.dmp > names_ue.dmp`;
+my $getue_state=`grep -P 'unclassified|environmental' $bin_dir/names.dmp > $output_dir/names_ue.dmp`;
 CHECK_GREP: if(not $getue_state){#indicate ---- finish "grep" command
 	#warn "finish extracting the unclassified & environmental taxa from names.dmp\n";
 }else{
@@ -136,7 +147,7 @@ CHECK_GREP: if(not $getue_state){#indicate ---- finish "grep" command
 	goto CHECK_GREP;
 }
 
-open UENAMEDMP, "<names_ue.dmp";
+open UENAMEDMP, "<$output_dir/names_ue.dmp";
 my $uenamedmp_line;
 my %taxon2uenames;
 my %exclude_taxa;
@@ -177,7 +188,7 @@ close UENAMEDMP;
 ##################################################################################
 
 if ( $m > $numnethits ) {    ###output all hits in $non_redundant_file_name
-    open SAMPOF, ">out.$m.sample";
+    open SAMPOF, ">$output_dir/out.$m.sample";
     for ( my $i = 0 ; $i < $numnethits ; $i++ ) {
         print SAMPOF "$nethits[$i]\n";
     }
@@ -186,7 +197,7 @@ if ( $m > $numnethits ) {    ###output all hits in $non_redundant_file_name
 }
 else {                       #$m<=$numnethits
 
-    open NODES, "<nodes.dmp";#2/5/13
+    open NODES, "<$bin_dir/nodes.dmp";#2/5/13
     my $node_line;
 #    chomp( my @nodes = <NODES> );
 #    my $numnodes = @nodes;
@@ -255,7 +266,7 @@ else {                       #$m<=$numnethits
 #then do the iteration for each taxonomic level, 
 #e.g. level 3 - child of level 2 ( with taxonomic id: 131567-cellular organism)
 #################################################################################
-    open PRO, ">cal.process";#2/5/13; intermediate values and parameters
+    open PRO, ">$output_dir/cal.process";#2/5/13; intermediate values and parameters
 
     foreach $nethit ( keys %nethit2taxon ) {
         $taxon = $nethit2taxon{$nethit};    #deepest leaf-node
@@ -329,9 +340,9 @@ else {                       #$m<=$numnethits
 #           take m_i non-redundant hits from T_i according to their homolog score with the query seq.
 #########################################################################################
 
-    open TAX2M, ">out.$m.taxon2m";
+    open TAX2M, ">$output_dir/out.$m.taxon2m";
     print TAX2M "Taxonomic_ID\tm\tn\ttaxonomic_name\n";
-    open SAMPOF, ">out.$m.sample";
+    open SAMPOF, ">$output_dir/out.$m.sample";
     print SAMPOF "Seq_ID\tTaxonomic_ID\tScore\n";
 
     my $sT;
